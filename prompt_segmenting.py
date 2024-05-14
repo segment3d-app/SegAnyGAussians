@@ -2,6 +2,7 @@ print("Starting prompt_segmenting.py")
 
 import time
 import os
+import ast
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "5,7"
 import torch
@@ -86,14 +87,14 @@ def write_ply(save_path, points, colors = None, normals = None, text=True):
 
     el = PlyElement.describe(vertex, 'vertex', comments=['vertices'])
     PlyData([el], text=text).write(save_path)
-    
+
 def write_ply_with_color(save_path, points, colors, text=True):
     dtype_full = [('x', 'f4'), ('y', 'f4'), ('z', 'f4'), ('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
     points = [(points[i,0], points[i,1], points[i,2], colors[i,0], colors[i,1], colors[i,2]) for i in range(points.shape[0])]
     vertex = np.array(points, dtype=dtype_full)
     el = PlyElement.describe(vertex, 'vertex', comments=['vertices'])
     PlyData([el], text=text).write(save_path)
-    
+
 def postprocess_statistical_filtering(pcd, precomputed_mask = None, max_time = 5):
     
     if type(pcd) == np.ndarray:
@@ -197,10 +198,10 @@ def postprocess_grad_based_statistical_filtering(pcd, precomputed_mask, feature_
         confirmed_point = pcd[true_mask,:]
 
     precomputed_mask[precomputed_mask == 1] = true_mask
-        
+
 #     print(time.time() - start_time)
     return confirmed_point.squeeze().detach().cpu().numpy(), precomputed_mask, test_threshold
-    
+
 def postprocess_growing(original_pcd, point_colors, seed_pcd, seed_point_colors, thresh = 0.05, grow_iter = 1):
     s_time = time.time()
     min_x, min_y, min_z = seed_pcd[:,0].min(), seed_pcd[:,1].min(), seed_pcd[:,2].min()
@@ -241,14 +242,16 @@ def postprocess_growing(original_pcd, point_colors, seed_pcd, seed_point_colors,
 
 # # Hyper-parameters
 parser = ArgumentParser(description="Hyperparameters parameters")
-parser.add_argument("--scene_dir", default="customized_data/laptop-sadin", type=str)
+parser.add_argument("--image_root", default="./data/customized_data/laptop-sadin", type=str)
+parser.add_argument("--image_idx", default=1, type=int)
+parser.add_argument("--mask_idx", default=2, type=int)
 parser.add_argument("--object", default="laptop", type=str)
-parser.add_argument("--target_coord", default=[[400, 400]], type=list)
+parser.add_argument("--target_coord", default="[[400, 400]]")
 parser.add_argument("--iterations", default=30000, type=int)
 args = parser.parse_args()
 
 FEATURE_DIM = 32
-DATA_ROOT = f'./data/{args.scene_dir}'
+DATA_ROOT = args.image_root
 SCENE_NAME= DATA_ROOT.split('/')[-1]
 MODEL_PATH = f'./output/{SCENE_NAME}-output/'
 MAIN_OUTPUT_PATH = f'./segmentation_res/{SCENE_NAME}-segment-output'
@@ -323,8 +326,7 @@ print("There are",len(cameras),"views in the dataset.")
 
 print("Begin image preparation ...")
 
-ref_img_camera_id = 9
-mask_img_camera_id = 9
+ref_img_camera_id = args.image_idx
 random_img = os.listdir(DATA_ROOT + '/images')[0]
 img_size = Image.open(DATA_ROOT + '/images/' + random_img)
 
@@ -356,9 +358,9 @@ print("Begin segmentation ...")
 # input_point = np.array([[250, 500]]) #handphone img 2
 # input_point = np.array([[50, 400]]) #gelas kopi img 9
 # input_point = np.array([[50, 800]]) #mangkok img 9
-input_point = np.array(args.target_coord)
+input_point = np.array(ast.literal_eval(args.target_coord))
 input_label = np.ones(len(input_point))
-box = np.array([200, 850, 400, 1200])
+# box = np.array([200, 850, 400, 1200])
 # print(input_point)
 # print(input_label)
 
@@ -390,7 +392,7 @@ if(os.path.exists(SEGMENT_OUTPUT_PATH) == False):
     os.makedirs(SEGMENT_OUTPUT_PATH)
 
 # choose which mask is the best 0/1/2?
-mask_id = 1
+mask_id = args.mask_idx
 origin_ref_mask = torch.tensor(vanilla_masks[mask_id]).float().cuda()
 
 print(f"Mask choosen is {mask_id}")
@@ -401,7 +403,7 @@ if origin_ref_mask.shape != (64,64):
     ref_mask[ref_mask != 1] = 0
 else:
     ref_mask = origin_ref_mask
-    
+
 # sam features
 start_time = time.time()
 
@@ -599,7 +601,7 @@ print("Time Cost:", time1 + time2 + time3 + time4 + time5 + time6 + time7)
 
 
 
-#dumps
+# dumps
 # input_point = np.array([[820, 580], [400, 500]])
 # input_point = np.array([[300, 400], [600, 700]])
 # input_point = np.array([[800, 600]])
