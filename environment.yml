@@ -1,6 +1,7 @@
 name: gaussian_splatting
 channels:
   - pytorch
+  - pytorch3d
   - conda-forge
   - defaults
 dependencies:
@@ -14,6 +15,9 @@ dependencies:
   - pytorch3d=0.7.1
   - tqdm
   - pip:
+    - matplotlib
+    - opencv-python
+    - numba
     - submodules/diff-gaussian-rasterization
     - submodules/diff-gaussian-rasterization_contrastive_f
     - submodules/simple-knn

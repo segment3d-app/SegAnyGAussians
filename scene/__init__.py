@@ -12,6 +12,8 @@
 import os
 import random
 import json
+import sys
+sys.path.insert(1, '..')
 from utils.system_utils import searchForMaxIteration
 from scene.dataset_readers import sceneLoadTypeCallbacks, fetchPly
 from scene.gaussian_model import GaussianModel
@@ -19,13 +21,14 @@ from scene.gaussian_model_ff import FeatureGaussianModel
 from arguments import ModelParams
 from utils.camera_utils import cameraList_from_camInfos, camera_to_JSON
 
+# +
 class Scene:
 
     gaussians : GaussianModel
     feature_gaussians : FeatureGaussianModel
 
     # target: feature, seg, scene
-    def __init__(self, args : ModelParams, gaussians : GaussianModel=None, feature_gaussians: FeatureGaussianModel=None, load_iteration=None, feature_load_iteration=None, shuffle=True, resolution_scales=[1.0], init_from_3dgs_pcd=False, target='scene', mode='train', sample_rate = 1.0):
+    def __init__(self, args : ModelParams, gaussians : GaussianModel=None, feature_gaussians: FeatureGaussianModel=None, object_name=None, load_iteration=None, feature_load_iteration=None, shuffle=True, resolution_scales=[1.0], init_from_3dgs_pcd=False, target='scene', mode='train', sample_rate = 1.0):
         """b
         :param path: Path to colmap scene main folder.
         """
@@ -93,7 +96,8 @@ class Scene:
             
         self.train_cameras = {}
         self.test_cameras = {}
-
+        print("==============")
+        print(args.source_path)
         if os.path.exists(os.path.join(args.source_path, "sparse")):
             scene_info = sceneLoadTypeCallbacks["Colmap"](args.source_path, args.images, args.eval, need_features = args.need_features, need_masks = args.need_masks, sample_rate = sample_rate)
         elif os.path.exists(os.path.join(args.source_path, "transforms_train.json")):
@@ -210,16 +214,30 @@ class Scene:
                 self.feature_gaussians.create_from_pcd(scene_info.point_cloud, self.cameras_extent)
 
 
-    def save(self, iteration, target='scene'):
+#     def save(self, iteration, target='scene'):
+#         assert target != 'feature' and "Please use save_feature() to save feature gaussians!"
+#         point_cloud_path = os.path.join(self.model_path, "point_cloud/iteration_{}".format(iteration))
+#         self.gaussians.save_ply(os.path.join(point_cloud_path, target+"_point_cloud.ply"), has_mask='no_mask' not in target)
+    
+    def save(self, iteration, object_name=None, target='scene'):
+        print("SAVE")
         assert target != 'feature' and "Please use save_feature() to save feature gaussians!"
         point_cloud_path = os.path.join(self.model_path, "point_cloud/iteration_{}".format(iteration))
-        self.gaussians.save_ply(os.path.join(point_cloud_path, target+"_point_cloud.ply"), has_mask='no_mask' not in target)
+        print("object name is " + str(object_name))
+        if(object_name != None):
+            if(os.path.exists(os.path.join(point_cloud_path, object_name)) == False):
+                os.makedirs(os.path.join(point_cloud_path, object_name))
+            self.gaussians.save_ply(os.path.join(point_cloud_path, object_name, object_name+"_"+target+"_point_cloud.ply"), has_mask='no_mask' not in target)
+        else:
+            self.gaussians.save_ply(os.path.join(point_cloud_path, target+"_point_cloud.ply"), has_mask='no_mask' not in target)
 
     def save_mask(self, iteration, id = 0):
+        print("SAVE_MASK")
         point_cloud_path = os.path.join(self.model_path, "point_cloud/iteration_{}".format(iteration))
         self.gaussians.save_mask(os.path.join(point_cloud_path, f"seg_point_cloud_{id}.npy"))
 
     def save_feature(self, iteration, target = 'coarse_seg_everything'):
+        print("SAVE_FEATURE")
         assert self.feature_gaussians is not None and (target == 'feature' or target == 'coarse_seg_everything' or target == 'contrastive_feature')
         point_cloud_path = os.path.join(self.model_path, "point_cloud/iteration_{}".format(iteration))
         self.feature_gaussians.save_ply(os.path.join(point_cloud_path, f"{target}_point_cloud.ply"))

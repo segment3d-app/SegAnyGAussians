@@ -15,7 +15,7 @@ if __name__ == '__main__':
     parser.add_argument("--image_root", default='./data/360_v2/garden/', type=str)
     parser.add_argument("--sam_checkpoint_path", default="./dependencies/sam_ckpt/sam_vit_h_4b8939.pth", type=str)
     parser.add_argument("--sam_arch", default="vit_h", type=str)
-    parser.add_argument("--downsample", default="4", type=str)
+    parser.add_argument("--downsample", default="1", type=str)
 
     args = parser.parse_args()
     
