@@ -1,3 +1,39 @@
+### Before running SAGA
+- Download pretrained SAM model di [sini](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth), taruh di dalam ./dependencies/sam_ckpt/
+- Step 2 dan 3 adalah tahap 3DGS:
+    - Hasil convert.py (colmap) ada di ./data/customized-data
+    - Hasil train_scene.py (train 3dgs) ada di dalam ./output/[nama file]. Nama file diberi tahu di akhir training
+- Hasil prompt_segmenting.py ada di dalam ./segmentation_res/[nama scene]/[nama objek]
+### Step
+1. simpan koleksi foto di ./data/customized_data/[nama scene]/input
+2. python convert.py -s <location>
+3. python train_scene.py -s <path to COLMAP or NeRF Synthetic dataset>
+4. python extract_features.py --image_root <path to the scene data> --sam_checkpoint_path <path to the pre-trained SAM model>
+5. python extract_segment_everything_masks.py --image_root <path to the scene data> --sam_checkpoint_path <path to the pre-trained SAM model>
+6. ubah nama folder hasil training dengan format [nama scene]-output. 
+pada cfg_args ubah nama model_path dengan [nama scene]-output juga
+    ![Untitled (8)](https://github.com/segment3d-app/SegAnyGAussians/assets/78811552/dc112c77-05df-4084-a22a-4df13fc4ede1)   
+7. python train_contrastive_feature.py -m <path to the pre-trained 3DGS model>
+8. python prompt_segmenting.py --scene_dir <path to the scene data> --object <segmented object name> --target_coord <targeted object coordinate> --iterations <which iterations to segment 7000/30000>
+9. to render the 3d object
+python render.py -m <path to the pre-trained 3DGS model> --precomputed_mask <path to the segmentation results> --target scene --segment
+
+### Example
+
+1. ./data/customized_data/**laptop-sadin**
+2. python convert.py -s **./data/customized_data/laptop-sadin**
+3. python extract_features.py --image_root **./data/customized_data/laptop-sadin** --sam_checkpoint_path **./dependencies/sam_ckpt/sam_vit_h_4b8939.pth**
+4. python extract_segment_everything_masks.py --image_root **./data/customized_data/laptop-sadin** --sam_checkpoint_path **./dependencies/sam_ckpt/sam_vit_h_4b8939.pth**
+5. python train_scene.py -s **./data/customized_data/laptop-sadin**
+6. ubah nama folder hasil training dengan **laptop-sadin-output.** begitu pula dengan model_path pada file cfg_args
+    ![Untitled (9)](https://github.com/segment3d-app/SegAnyGAussians/assets/78811552/51d22f10-9d0c-4004-a1c2-34181f4b3d5f)
+7. python train_contrastive_feature.py -m **./output/laptop-sadin-output**
+8. python prompt_segmenting.py --scene_dir "customized_data/laptop-sadin" --object "gelas-kopi3" --target_coord [[50, 400]] --iterations 30000
+9. to render the 3d object
+python render.py -m **./output/laptop-sadin-output** --precomputed_mask **./segmentation_res/laptop-sadin-segment-output/[nama-object]/final_mask.pt** --target scene --segment
+
+
+### (the official README starts here)
 # SAGA
 > Note: This repository is still under construction.
 
