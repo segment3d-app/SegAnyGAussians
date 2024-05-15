@@ -1,4 +1,4 @@
-name: gaussian_splatting
+name: saga
 channels:
   - pytorch
   - pytorch3d
