@@ -250,23 +250,28 @@ parser.add_argument("--target_coord", default="[[400, 400]]")
 parser.add_argument("--iterations", default=30000, type=int)
 args = parser.parse_args()
 
+# +
 FEATURE_DIM = 32
 DATA_ROOT = args.image_root
 SCENE_NAME= DATA_ROOT.split('/')[-1]
 MODEL_PATH = f'./output/{SCENE_NAME}-output/'
 MAIN_OUTPUT_PATH = f'./segmentation_res/{SCENE_NAME}-segment-output'
 FEATURE_GAUSSIAN_ITERATION = args.iterations
+SAM_ARCH = 'vit_h'
+SAM_CKPT_PATH = './dependencies/sam_ckpt/sam_vit_h_4b8939.pth'
+
+if(os.path.exists(MAIN_OUTPUT_PATH) == False):
+    os.makedirs(MAIN_OUTPUT_PATH)
+
 # MODEL_PATH = './output/laptop-sadin-output/'
 # MAIN_OUTPUT_PATH = './segmentation_res/laptop-sadin-segment-output'
 # FEATURE_GAUSSIAN_ITERATION = 30000
+# -
 
 SAM_PROJ_PATH = os.path.join(MODEL_PATH, f'point_cloud/iteration_{str(FEATURE_GAUSSIAN_ITERATION)}/sam_proj.pt')
 NEG_PROJ_PATH = os.path.join(MODEL_PATH, f'point_cloud/iteration_{str(FEATURE_GAUSSIAN_ITERATION)}/neg_proj.pt')
 FEATURE_PCD_PATH = os.path.join(MODEL_PATH, f'point_cloud/iteration_{str(FEATURE_GAUSSIAN_ITERATION)}/contrastive_feature_point_cloud.ply')
 SCENE_PCD_PATH = os.path.join(MODEL_PATH, f'point_cloud/iteration_{str(FEATURE_GAUSSIAN_ITERATION)}/scene_point_cloud.ply')
-
-SAM_ARCH = 'vit_h'
-SAM_CKPT_PATH = './dependencies/sam_ckpt/sam_vit_h_4b8939.pth'
 
 print(f"""FEATURE_DIM = {FEATURE_DIM}
 DATA_ROOT = {DATA_ROOT}
@@ -364,6 +369,7 @@ input_label = np.ones(len(input_point))
 # print(input_point)
 # print(input_label)
 
+# +
 with torch.no_grad():
     vanilla_masks, scores, logits = predictor.predict(
         point_coords=input_point,
@@ -371,31 +377,39 @@ with torch.no_grad():
 #         box = box,
         multimask_output=True,
     )
-# print(len(vanilla_masks))
-# plt.figure(figsize=(15, 15))
-# plt.rcParams["font.size"] = 12
-# plt.subplot(1,4,1)
-# plt.imshow(vanilla_masks[0])
-# plt.subplot(1,4,2)
-# plt.imshow(vanilla_masks[1])
-# plt.subplot(1,4,3)
-# plt.imshow(vanilla_masks[2])
-# plt.subplot(1,4,4)
-# plt.imshow(img)
-
-masks = torch.nn.functional.interpolate(torch.from_numpy(vanilla_masks).float().unsqueeze(0), (64,64), mode='bilinear').squeeze(0).cuda()
-masks[masks > 0.5] = 1
-masks[masks != 1] = 0
 
 SEGMENT_OUTPUT_PATH = f"{MAIN_OUTPUT_PATH}/{args.object}"
 if(os.path.exists(SEGMENT_OUTPUT_PATH) == False):
     os.makedirs(SEGMENT_OUTPUT_PATH)
+if(os.path.exists(os.path.join(SEGMENT_OUTPUT_PATH, 'masks')) == False):
+    os.makedirs(os.path.join(SEGMENT_OUTPUT_PATH, 'masks'))
+
+plt.figure(figsize=(15, 15))
+plt.rcParams["font.size"] = 12
+plt.subplot(1,4,1)
+plt.imshow(vanilla_masks[0])
+plt.savefig(f"{SEGMENT_OUTPUT_PATH}/masks/mask_0.png")
+plt.subplot(1,4,2)
+plt.imshow(vanilla_masks[1])
+plt.savefig(f"{SEGMENT_OUTPUT_PATH}/masks/mask_1.png")
+plt.subplot(1,4,3)
+plt.imshow(vanilla_masks[2])
+plt.savefig(f"{SEGMENT_OUTPUT_PATH}/masks/mask_2.png")
+plt.subplot(1,4,4)
+plt.imshow(img)
+# -
+
+masks = torch.nn.functional.interpolate(torch.from_numpy(vanilla_masks).float().unsqueeze(0), (64,64), mode='bilinear').squeeze(0).cuda()
+masks[masks > 0.5] = 1
+masks[masks != 1] = 0
 
 # choose which mask is the best 0/1/2?
 mask_id = args.mask_idx
 origin_ref_mask = torch.tensor(vanilla_masks[mask_id]).float().cuda()
 
 print(f"Mask choosen is {mask_id}")
+plt.imshow(vanilla_masks[mask_id])
+plt.savefig(f"{SEGMENT_OUTPUT_PATH}/masks/selected_mask.png")
 
 if origin_ref_mask.shape != (64,64):
     ref_mask = torch.nn.functional.interpolate(origin_ref_mask[None, None, :, :], (64,64), mode='bilinear').squeeze().cuda()
