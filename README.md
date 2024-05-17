@@ -1,5 +1,6 @@
 ### Before running SAGA
 - Download pretrained SAM model di [sini](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth), taruh di dalam ./dependencies/sam_ckpt/
+- Untuk data custom simpan di dalam directory ./data/customized-data/[nama scene]
 - Step 2 dan 3 adalah tahap 3DGS:
     - Hasil convert.py (colmap) ada di ./data/customized-data
     - Hasil train_scene.py (train 3dgs) ada di dalam ./output/[nama file]. Nama file diberi tahu di akhir training
