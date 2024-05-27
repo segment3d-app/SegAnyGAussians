@@ -230,7 +230,7 @@ class Scene:
             self.gaussians.save_ply(os.path.join(point_cloud_path, object_name, object_name+"_"+target+"_point_cloud.ply"), has_mask='no_mask' not in target)
         else:
             self.gaussians.save_ply(os.path.join(point_cloud_path, target+"_point_cloud.ply"), has_mask='no_mask' not in target)
-            self.gaussians.save_ply(os.path.join(point_cloud_path, target+"_point_cloud.ply"), False)
+            self.gaussians.save_ply(os.path.join(point_cloud_path, target+"_point_cloud_no_mask.ply"), False)
             # self.gaussians.save_ply_no_mask(os.path.join(point_cloud_path, target+"_point_cloud_no_mask.ply"), has_mask='no_mask' not in target)
     
     def save_mask(self, iteration, id = 0):
