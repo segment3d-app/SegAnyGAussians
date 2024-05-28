@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # Initialize system state (RNG)
     safe_state(args.quiet)
     print(args.precomputed_mask.split('/'))
-    object_name = args.precomputed_mask.split('/')[2]
+    object_name = args.precomputed_mask.split('/')[3]
     print("object_name in render.py __init__ is " + object_name)
 
     render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, object_name, args.precomputed_mask)
