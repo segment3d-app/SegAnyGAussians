@@ -52,6 +52,7 @@ if __name__ == '__main__':
     print("Extracting SAM segment everything masks...")
     for path in tqdm(os.listdir(IMAGE_DIR)):
         name = path.split('.')[0]
+        print(f'Processing file {name}')
         img = cv2.imread(os.path.join(IMAGE_DIR, path))
         masks = mask_generator.generate(img)
 
