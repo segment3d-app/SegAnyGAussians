@@ -53,16 +53,20 @@ if __name__ == '__main__':
     for path in tqdm(os.listdir(IMAGE_DIR)):
         name = path.split('.')[0]
         print(f'Processing file {name}')
-        img = cv2.imread(os.path.join(IMAGE_DIR, path))
-        masks = mask_generator.generate(img)
+        if (os.path.exists(os.path.join(args.image_root, 'sam_masks', f'{name}.pt')) == False):
+            img = cv2.imread(os.path.join(IMAGE_DIR, path))
+            masks = mask_generator.generate(img)
 
-        mask_list = []
-        for m in masks:
-            m_score = torch.from_numpy(m['segmentation']).float()[None, None, :, :].to('cuda')
-            m_score = torch.nn.functional.interpolate(m_score, size=(200,200) , mode='bilinear', align_corners=False).squeeze()
-            m_score[m_score >= 0.5] = 1
-            m_score[m_score != 1] = 0
-            mask_list.append(m_score)
-        masks = torch.stack(mask_list, dim=0)
+            mask_list = []
+            for m in masks:
+                m_score = torch.from_numpy(m['segmentation']).float()[None, None, :, :].to('cuda')
+                m_score = torch.nn.functional.interpolate(m_score, size=(200,200) , mode='bilinear', align_corners=False).squeeze()
+                m_score[m_score >= 0.5] = 1
+                m_score[m_score != 1] = 0
+                mask_list.append(m_score)
+            masks = torch.stack(mask_list, dim=0)
 
-        torch.save(masks, os.path.join(OUTPUT_DIR, name+'.pt'))
+            torch.save(masks, os.path.join(OUTPUT_DIR, name+'.pt'))
+            print(f'Done processing {name}')
+        else:
+            print(f'File {name} has been processed')
