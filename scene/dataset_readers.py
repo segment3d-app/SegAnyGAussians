@@ -107,14 +107,15 @@ def readColmapCameras(cam_extrinsics, cam_intrinsics, images_folder, features_fo
         print(f'Image path: {image_path}')
         image_name = os.path.basename(image_path).split(".")[0]
         print(f'Image name: {image_name}')
-        image = Image.open(image_path)
+        if(os.path.exists(image_path)):
+            image = Image.open(image_path)
 
-        features = torch.load(os.path.join(features_folder, image_name.split('.')[0] + ".pt")) if features_folder is not None else None
-        masks = torch.load(os.path.join(masks_folder, image_name.split('.')[0] + ".pt")) if masks_folder is not None else None
+            features = torch.load(os.path.join(features_folder, image_name.split('.')[0] + ".pt")) if features_folder is not None else None
+            masks = torch.load(os.path.join(masks_folder, image_name.split('.')[0] + ".pt")) if masks_folder is not None else None
 
-        cam_info = CameraInfo(uid=uid, R=R, T=T, FovY=FovY, FovX=FovX, image=image, features=features, masks=masks,
-                              image_path=image_path, image_name=image_name, width=width, height=height)
-        cam_infos.append(cam_info)
+            cam_info = CameraInfo(uid=uid, R=R, T=T, FovY=FovY, FovX=FovX, image=image, features=features, masks=masks,
+                                image_path=image_path, image_name=image_name, width=width, height=height)
+            cam_infos.append(cam_info)
     sys.stdout.write('\n')
     return cam_infos
 
