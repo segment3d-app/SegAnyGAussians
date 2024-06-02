@@ -90,7 +90,7 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
         if segment:
             assert object_name != None, "object_name cannot be None"
             print("object_name in rendere_sets is" + object_name)
-            scene.save(scene.loaded_iter, object_name, target='scene_no_mask')
+            # scene.save(scene.loaded_iter, object_name, target='scene_no_mask')
             gaussians.segment(precomputed_mask)
             scene.save(scene.loaded_iter, object_name, target='seg_no_mask')
 
