@@ -9,7 +9,6 @@
 # For inquiries contact  george.drettakis@inria.fr
 #
 
-import ast
 import torch
 from scene import Scene, GaussianModel, FeatureGaussianModel
 import os
@@ -132,14 +131,16 @@ if __name__ == "__main__":
     print(args.model_path.split('/'))
     scene_name = args.model_path.replace("-output", "").split('/')[2]
     print(args.object_list)
-    for i in args.object_list:
+    obj_list = []
+    for i in args.object_list.strip('][').split(','):
         print(i)
+        obj_list.append(i)
     # obj_list = ast.literal_eval(str(args.object_list))
     # print("Object list")
     # print(obj_list)
     print("scene_name in render.py __init__ is " + scene_name)
 
-    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, scene_name, args.precomputed_mask, args.object_list)
+    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, scene_name, args.precomputed_mask, obj_list)
 
 # +
 # def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, precomputed_mask = None):
