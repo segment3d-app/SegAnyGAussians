@@ -70,7 +70,8 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
             feature_gaussians = FeatureGaussianModel(dataset.feature_dim)        
         scene = Scene(dataset, gaussians, feature_gaussians, load_iteration=iteration, shuffle=False, mode='eval', target=target if precomputed_mask is None else 'scene')
         if segment:
-            for object_name in ast.literal_eval(obj_list):
+            print(obj_list)
+            for object_name in obj_list:
                 print(f"Rendering {object_name} on scene {scene_name}")
                 precomputed_mask = f"./segmentation_res/{scene_name}-segment-output/{object_name}/final_mask.pt"
                 print(precomputed_mask)
