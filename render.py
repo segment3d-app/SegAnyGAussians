@@ -9,6 +9,7 @@
 # For inquiries contact  george.drettakis@inria.fr
 #
 
+import ast
 import torch
 from scene import Scene, GaussianModel, FeatureGaussianModel
 import os
@@ -57,42 +58,39 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
             torch.save(rendering, os.path.join(render_path, '{0:05d}'.format(idx) + ".pt"))
 
 
-def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, object_name = None, precomputed_mask = None):
+def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, object_name = None, precomputed_mask = None, object_list = None):
     dataset.need_features = dataset.need_masks = False
 #     object_name = object_name
 #     if object_name != None:
 #         print(object_name.split())
 #         object_name = object_name.split()[0]
-    
+    scene_name = dataset._model_path.split('/')[-1].replace('-output', '')
+    gaussians, feature_gaussians = None, None
     if segment:
         assert target == 'seg' or precomputed_mask is not None and "Segmentation only works with target 'seg' or precomputed_mask!"
-    gaussians, feature_gaussians = None, None
     with torch.no_grad():
-        if precomputed_mask is not None:
-            if '.pt' in precomputed_mask:
-                precomputed_mask = torch.load(precomputed_mask)
-            elif '.npy' in precomputed_mask:
-                import numpy as np
-                precomputed_mask = torch.from_numpy(np.load(precomputed_mask)).cuda()
-                precomputed_mask[precomputed_mask > 0] = 1
-                precomputed_mask[precomputed_mask != 1] = 0
-                precomputed_mask = precomputed_mask.bool()
-
         if target == 'scene' or target == 'seg':
             gaussians = GaussianModel(dataset.sh_degree)
         if target == 'contrastive_feature':
-            feature_gaussians = FeatureGaussianModel(dataset.feature_dim)
-        
-
-        print("object name in render.py is" + str(object_name))
+            feature_gaussians = FeatureGaussianModel(dataset.feature_dim)        
         scene = Scene(dataset, gaussians, feature_gaussians, object_name, load_iteration=iteration, shuffle=False, mode='eval', target=target if precomputed_mask is None else 'scene')
-
         if segment:
-            assert object_name != None, "object_name cannot be None"
-            print("object_name in rendere_sets is" + object_name)
-            # scene.save(scene.loaded_iter, object_name, target='scene_no_mask')
-            gaussians.segment(precomputed_mask)
-            scene.save(scene.loaded_iter, object_name, target='seg_no_mask')
+            for obj_name in ast.literal_eval(object_list):
+                precomputed_mask = f"./segmentation_res/{scene_name}-segment-output/{obj_name}/final_mask.pt"
+                if precomputed_mask is not None:
+                    if '.pt' in precomputed_mask:
+                        precomputed_mask = torch.load(precomputed_mask)
+                    elif '.npy' in precomputed_mask:
+                        import numpy as np
+                        precomputed_mask = torch.from_numpy(np.load(precomputed_mask)).cuda()
+                        precomputed_mask[precomputed_mask > 0] = 1
+                        precomputed_mask[precomputed_mask != 1] = 0
+                        precomputed_mask = precomputed_mask.bool()
+                assert object_name != None, "object_name cannot be None"
+                print("object_name in rendere_sets is" + object_name)
+                # scene.save(scene.loaded_iter, object_name, target='scene_no_mask')
+                gaussians.segment(precomputed_mask)
+                scene.save(scene.loaded_iter, object_name, target='seg_no_mask')
 
         bg_color = [1,1,1] if dataset.white_background else [0, 0, 0]
         if 'feature' in target:
@@ -120,6 +118,7 @@ if __name__ == "__main__":
     parser.add_argument('--target', default='scene', const='scene', nargs='?', choices=['scene', 'seg', 'contrastive_feature'])
     parser.add_argument('--idx', default=0, type=int)
     parser.add_argument('--precomputed_mask', default=None, type=str)
+    parser.add_argument('--object_list', default=None, type=str)
 #     parser.add_argument('--object_name', default=None, type=str)
 
     args = get_combined_args(parser)
