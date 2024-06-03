@@ -131,7 +131,8 @@ if __name__ == "__main__":
     safe_state(args.quiet)
     print(args.model_path.split('/'))
     scene_name = args.model_path.replace("-output", "").split('/')[2]
-    obj_list = ast.literal_eval(args.object_list)
+    print(args.object_list)
+    obj_list = ast.literal_eval(str(args.object_list))
     print("Object list")
     print(obj_list)
     print("scene_name in render.py __init__ is " + scene_name)
