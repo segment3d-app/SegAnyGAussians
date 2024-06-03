@@ -58,9 +58,9 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
             torch.save(rendering, os.path.join(render_path, '{0:05d}'.format(idx) + ".pt"))
 
 
-def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, scene_name = None, precomputed_mask = None, object_list = None):
+def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, scene_name, segment : bool = False, target = 'scene', idx = 0, scene_name = None, precomputed_mask = None, object_list = None):
     dataset.need_features = dataset.need_masks = False
-    scene_name = dataset._model_path.split('/')[-1].replace('-output', '')
+    # scene_name = dataset.model_path.split('/')[-1].replace('-output', '')
     gaussians, feature_gaussians = None, None
     if segment:
         assert target == 'seg' or precomputed_mask is not None and "Segmentation only works with target 'seg' or precomputed_mask!"
@@ -128,11 +128,11 @@ if __name__ == "__main__":
         
     # Initialize system state (RNG)
     safe_state(args.quiet)
-    print(model._model_path.split('/'))
+    print(args.model_path.split('/'))
     scene_name = model._model_path.split('/')[-1].replace("-output", "")
     print("scene_name in render.py __init__ is " + scene_name)
 
-    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, scene_name, args.precomputed_mask)
+    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, scene_name, args.precomputed_mask, scene_name)
 
 # +
 # def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, precomputed_mask = None):
