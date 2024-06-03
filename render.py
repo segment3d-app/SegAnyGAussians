@@ -64,12 +64,12 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
     # if segment:
     #     assert target == 'seg' or precomputed_mask is not None and "Segmentation only works with target 'seg' or precomputed_mask!"
     with torch.no_grad():
-        if target == 'scene' or target == 'seg':
-            gaussians = GaussianModel(dataset.sh_degree)
-        if target == 'contrastive_feature':
-            feature_gaussians = FeatureGaussianModel(dataset.feature_dim)        
-        scene = Scene(dataset, gaussians, feature_gaussians, load_iteration=iteration, shuffle=False, mode='eval', target=target if precomputed_mask is None else 'scene')
         if segment:
+            if target == 'scene' or target == 'seg':
+                gaussians = GaussianModel(dataset.sh_degree)
+            if target == 'contrastive_feature':
+                feature_gaussians = FeatureGaussianModel(dataset.feature_dim)        
+            scene = Scene(dataset, gaussians, feature_gaussians, load_iteration=iteration, shuffle=False, mode='eval', target=target if precomputed_mask is None else 'scene')
             print(obj_list)
             for object_name in obj_list:
                 print(f"Rendering {object_name} on scene {scene_name}")
