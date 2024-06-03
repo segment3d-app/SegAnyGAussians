@@ -28,7 +28,7 @@ class Scene:
     feature_gaussians : FeatureGaussianModel
 
     # target: feature, seg, scene
-    def __init__(self, args : ModelParams, gaussians : GaussianModel=None, feature_gaussians: FeatureGaussianModel=None, object_name=None, load_iteration=None, feature_load_iteration=None, shuffle=True, resolution_scales=[1.0], init_from_3dgs_pcd=False, target='scene', mode='train', sample_rate = 1.0):
+    def __init__(self, args : ModelParams, gaussians : GaussianModel=None, feature_gaussians: FeatureGaussianModel=None, load_iteration=None, feature_load_iteration=None, shuffle=True, resolution_scales=[1.0], init_from_3dgs_pcd=False, target='scene', mode='train', sample_rate = 1.0):
         """b
         :param path: Path to colmap scene main folder.
         """

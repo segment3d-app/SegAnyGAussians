@@ -58,12 +58,8 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
             torch.save(rendering, os.path.join(render_path, '{0:05d}'.format(idx) + ".pt"))
 
 
-def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, object_name = None, precomputed_mask = None, object_list = None):
+def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, scene_name = None, precomputed_mask = None, object_list = None):
     dataset.need_features = dataset.need_masks = False
-#     object_name = object_name
-#     if object_name != None:
-#         print(object_name.split())
-#         object_name = object_name.split()[0]
     scene_name = dataset._model_path.split('/')[-1].replace('-output', '')
     gaussians, feature_gaussians = None, None
     if segment:
@@ -73,10 +69,11 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
             gaussians = GaussianModel(dataset.sh_degree)
         if target == 'contrastive_feature':
             feature_gaussians = FeatureGaussianModel(dataset.feature_dim)        
-        scene = Scene(dataset, gaussians, feature_gaussians, object_name, load_iteration=iteration, shuffle=False, mode='eval', target=target if precomputed_mask is None else 'scene')
+        scene = Scene(dataset, gaussians, feature_gaussians, load_iteration=iteration, shuffle=False, mode='eval', target=target if precomputed_mask is None else 'scene')
         if segment:
-            for obj_name in ast.literal_eval(object_list):
-                precomputed_mask = f"./segmentation_res/{scene_name}-segment-output/{obj_name}/final_mask.pt"
+            for object_name in ast.literal_eval(object_list):
+                precomputed_mask = f"./segmentation_res/{scene_name}-segment-output/{object_name}/final_mask.pt"
+                print(precomputed_mask)
                 if precomputed_mask is not None:
                     if '.pt' in precomputed_mask:
                         precomputed_mask = torch.load(precomputed_mask)
@@ -87,7 +84,7 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
                         precomputed_mask[precomputed_mask != 1] = 0
                         precomputed_mask = precomputed_mask.bool()
                 assert object_name != None, "object_name cannot be None"
-                print("object_name in rendere_sets is" + object_name)
+                print("object_name in render_sets is" + object_name)
                 # scene.save(scene.loaded_iter, object_name, target='scene_no_mask')
                 gaussians.segment(precomputed_mask)
                 scene.save(scene.loaded_iter, object_name, target='seg_no_mask')
@@ -131,11 +128,11 @@ if __name__ == "__main__":
         
     # Initialize system state (RNG)
     safe_state(args.quiet)
-    print(args.precomputed_mask.split('/'))
-    object_name = args.precomputed_mask.split('/')[3]
-    print("object_name in render.py __init__ is " + object_name)
+    print(model._model_path.split('/'))
+    scene_name = model._model_path.split('/')[-1].replace("-output", "")
+    print("scene_name in render.py __init__ is " + scene_name)
 
-    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, object_name, args.precomputed_mask)
+    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, scene_name, args.precomputed_mask)
 
 # +
 # def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, precomputed_mask = None):
