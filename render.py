@@ -132,7 +132,7 @@ if __name__ == "__main__":
     scene_name = args.model_path.replace("-output", "").split('/')[2]
     print(args.object_list)
     obj_list = []
-    for i in args.object_list.strip('][').split(','):
+    for i in args.object_list.strip('][').split(', '):
         print(i)
         obj_list.append(i)
     # obj_list = ast.literal_eval(str(args.object_list))
