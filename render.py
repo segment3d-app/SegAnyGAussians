@@ -68,6 +68,15 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
         assert target == 'seg' or precomputed_mask is not None and "Segmentation only works with target 'seg' or precomputed_mask!"
     gaussians, feature_gaussians = None, None
     with torch.no_grad():
+        if precomputed_mask is not None:
+            if '.pt' in precomputed_mask:
+                precomputed_mask = torch.load(precomputed_mask)
+            elif '.npy' in precomputed_mask:
+                import numpy as np
+                precomputed_mask = torch.from_numpy(np.load(precomputed_mask)).cuda()
+                precomputed_mask[precomputed_mask > 0] = 1
+                precomputed_mask[precomputed_mask != 1] = 0
+                precomputed_mask = precomputed_mask.bool()
 
         if target == 'scene' or target == 'seg':
             gaussians = GaussianModel(dataset.sh_degree)
