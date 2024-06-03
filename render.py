@@ -58,7 +58,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
             torch.save(rendering, os.path.join(render_path, '{0:05d}'.format(idx) + ".pt"))
 
 
-def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, scene_name = None, precomputed_mask = None, object_list = None):
+def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, scene_name = None, precomputed_mask = None, obj_list = None):
     dataset.need_features = dataset.need_masks = False
     # scene_name = dataset.model_path.split('/')[-1].replace('-output', '')
     gaussians, feature_gaussians = None, None
@@ -71,7 +71,7 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
             feature_gaussians = FeatureGaussianModel(dataset.feature_dim)        
         scene = Scene(dataset, gaussians, feature_gaussians, load_iteration=iteration, shuffle=False, mode='eval', target=target if precomputed_mask is None else 'scene')
         if segment:
-            for object_name in ast.literal_eval(object_list):
+            for object_name in ast.literal_eval(obj_list):
                 print(f"Rendering {object_name} on scene {scene_name}")
                 precomputed_mask = f"./segmentation_res/{scene_name}-segment-output/{object_name}/final_mask.pt"
                 print(precomputed_mask)
@@ -131,12 +131,12 @@ if __name__ == "__main__":
     safe_state(args.quiet)
     print(args.model_path.split('/'))
     scene_name = args.model_path.replace("-output", "").split('/')[2]
-    object_list = ast.literal_eval(args.object_list)
+    obj_list = ast.literal_eval(args.object_list)
     print("Object list")
-    print(object_list)
+    print(obj_list)
     print("scene_name in render.py __init__ is " + scene_name)
 
-    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, scene_name, args.precomputed_mask, object_list)
+    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, scene_name, args.precomputed_mask, obj_list)
 
 # +
 # def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, precomputed_mask = None):
