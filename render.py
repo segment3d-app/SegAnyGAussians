@@ -61,6 +61,9 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
 def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, segment : bool = False, target = 'scene', idx = 0, scene_name = None, precomputed_mask = None, object_list = None):
     dataset.need_features = dataset.need_masks = False
     # scene_name = dataset.model_path.split('/')[-1].replace('-output', '')
+    print("Object list")
+    print(object_list)
+    print(ast.literal_eval(object_list))
     gaussians, feature_gaussians = None, None
     # if segment:
     #     assert target == 'seg' or precomputed_mask is not None and "Segmentation only works with target 'seg' or precomputed_mask!"
