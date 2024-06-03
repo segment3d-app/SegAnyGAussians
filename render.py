@@ -62,8 +62,8 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
     dataset.need_features = dataset.need_masks = False
     # scene_name = dataset.model_path.split('/')[-1].replace('-output', '')
     gaussians, feature_gaussians = None, None
-    if segment:
-        assert target == 'seg' or precomputed_mask is not None and "Segmentation only works with target 'seg' or precomputed_mask!"
+    # if segment:
+    #     assert target == 'seg' or precomputed_mask is not None and "Segmentation only works with target 'seg' or precomputed_mask!"
     with torch.no_grad():
         if target == 'scene' or target == 'seg':
             gaussians = GaussianModel(dataset.sh_degree)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     # Initialize system state (RNG)
     safe_state(args.quiet)
     print(args.model_path.split('/'))
-    scene_name = model._model_path.split('/')[-1].replace("-output", "")
+    scene_name = model._model_path.split('/')[2].replace("-output", "")
     print("scene_name in render.py __init__ is " + scene_name)
 
     render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, args.segment, args.target, args.idx, scene_name, args.precomputed_mask, scene_name)
