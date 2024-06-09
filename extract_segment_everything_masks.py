@@ -21,7 +21,7 @@ if __name__ == '__main__':
     
     print("Initializing SAM...")
     model_type = args.sam_arch
-    sam = sam_model_registry[model_type](checkpoint=args.sam_checkpoint_path).to('cuda')
+    sam = sam_model_registry[model_type](checkpoint=args.sam_checkpoint_path).to('cuda', dtype=torch.half, non_blocking=True)
     predictor = SamPredictor(sam)
 
     # Default settings of SAM
@@ -29,7 +29,8 @@ if __name__ == '__main__':
         sam, 
         pred_iou_thresh = 0.88, 
         stability_score_thresh = 0.95, 
-        min_mask_region_area = 0
+        min_mask_region_area = 0,
+        points_per_batch=32
     )
     # Trex is hard to segment with the default setting
     # mask_generator = SamAutomaticMaskGenerator(
@@ -52,7 +53,7 @@ if __name__ == '__main__':
     print("Extracting SAM segment everything masks...")
     for path in tqdm(os.listdir(IMAGE_DIR)):
         name = path.split('.')[0]
-        # print(f'Processing file {name}')
+        print(f'Processing file {name}')
         if (os.path.exists(os.path.join(args.image_root, 'sam_masks', f'{name}.pt')) == False):
             img = cv2.imread(os.path.join(IMAGE_DIR, path))
             masks = mask_generator.generate(img)
