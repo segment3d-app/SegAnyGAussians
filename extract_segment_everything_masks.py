@@ -21,7 +21,7 @@ if __name__ == '__main__':
     
     print("Initializing SAM...")
     model_type = args.sam_arch
-    sam = sam_model_registry[model_type](checkpoint=args.sam_checkpoint_path).to('cuda', dtype=torch.half, non_blocking=True)
+    sam = sam_model_registry[model_type](checkpoint=args.sam_checkpoint_path).to('cuda', non_blocking=True)
     predictor = SamPredictor(sam)
 
     # Default settings of SAM
