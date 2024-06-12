@@ -248,13 +248,14 @@ parser.add_argument("--mask_idx", default=2, type=int)
 parser.add_argument("--object", default="laptop", type=str)
 parser.add_argument("--target_coord", default="[[400, 400]]")
 parser.add_argument("--iterations", default=30000, type=int)
+parser.add_argument("--model_path", type=str)
 args = parser.parse_args()
 
 # +
 FEATURE_DIM = 32
 DATA_ROOT = args.image_root
 SCENE_NAME= DATA_ROOT.split('/')[-1]
-MODEL_PATH = f'./output/{SCENE_NAME}-output/'
+MODEL_PATH = args.model_path if args.model_path else f'./output/{SCENE_NAME}-output/'
 MAIN_OUTPUT_PATH = f'./segmentation_res/{SCENE_NAME}-segment-output'
 FEATURE_GAUSSIAN_ITERATION = args.iterations
 SAM_ARCH = 'vit_h'
