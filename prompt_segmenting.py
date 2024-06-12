@@ -4,7 +4,6 @@ import time
 import os
 import ast
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "5,7"
 import torch
 import pytorch3d.ops
 from plyfile import PlyData, PlyElement
@@ -249,6 +248,7 @@ parser.add_argument("--object", default="laptop", type=str)
 parser.add_argument("--target_coord", default="[[400, 400]]")
 parser.add_argument("--iterations", default=30000, type=int)
 parser.add_argument("--model_path", type=str)
+parser.add_argument("--sam_checkpoint_path", type=str)
 args = parser.parse_args()
 
 # +
@@ -259,7 +259,11 @@ MODEL_PATH = args.model_path if args.model_path else f'./output/{SCENE_NAME}-out
 MAIN_OUTPUT_PATH = f'./segmentation_res/{SCENE_NAME}-segment-output'
 FEATURE_GAUSSIAN_ITERATION = args.iterations
 SAM_ARCH = 'vit_h'
-SAM_CKPT_PATH = './dependencies/sam_ckpt/sam_vit_h_4b8939.pth'
+
+if args.sam_checkpoint_path:
+    SAM_CKPT_PATH = args.sam_checkpoint_path
+else:
+    SAM_CKPT_PATH = './dependencies/sam_ckpt/sam_vit_h_4b8939.pth'  
 
 if(os.path.exists(MAIN_OUTPUT_PATH) == False):
     os.makedirs(MAIN_OUTPUT_PATH)
